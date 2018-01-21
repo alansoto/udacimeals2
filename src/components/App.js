@@ -8,6 +8,7 @@ import ArrowRightIcon from 'react-icons/lib/fa/arrow-circle-right';
 import Loading from 'react-loading';
 import { fetchRecipes } from '../utils/api';
 import FoodList from './FoodList';
+import ShoppingList from './ShoppingList';
 
 class App extends Component {
   state = {
@@ -15,7 +16,8 @@ class App extends Component {
     meal:null,
     day:null,
     food: null,
-    loadingFood:false
+    loadingFood:false,
+    ingredientsModalOpen: false
   }
   openFoodModal = ({ meal, day }) => {
     this.setState(() => ({
@@ -55,8 +57,25 @@ doThing = () => {
   this.props.selectRecipe({day:'monday', recipe:{label:'arrroz'}, meal:'breakfast'})
 }
 
+openIngredientsModal = () => this.setState(() => ({ ingredientsModalOpen: true }))
+closeIngredientsModal = () => this.setState(() => ({ ingredientsModalOpen: false }))
+
+generateShoppingList = () => {
+  return this.props.calendar.reduce((result, { meals }) => {
+    const { breakfast, lunch, dinner } = meals
+
+    breakfast && result.push(breakfast)
+    lunch && result.push(lunch)
+    dinner && result.push(dinner)
+
+    return result
+  }, [])
+  .reduce((ings, { ingredientLines }) => ings.concat(ingredientLines), [])
+}
+
+
  render() {
-   const { foodModalOpen, loadingFood, food } = this.state;
+   const { foodModalOpen, loadingFood, food, ingredientsModalOpen } = this.state;
    const {calendar,remove, selectRecipe} = this.props;
    const mealOrder = ['breakfast','lunch','dinner'];
 
@@ -64,6 +83,15 @@ doThing = () => {
 
 
       <div className='container'>
+
+        <div className='nav'>
+          <h1 className='header'>UdaciMeals</h1>
+          <button
+            className='shopping-list'
+            onClick={this.openIngredientsModal}>
+            Shopping List
+          </button>
+        </div>
 
 
         <ul className='meal-types'>
@@ -109,34 +137,43 @@ doThing = () => {
             {loadingFood === true
               ? <Loading delay={200} type='spin' color='#222' className='loading' />
               : <div className='search-container'>
-                  <h3 className='subheader'>
-                    Find a meal for {capitalize(this.state.day)} {this.state.meal}.
-                  </h3>
-                  <div className='search'>
-                    <input
-                      className='food-input'
-                      type='text'
-                      placeholder='Search Foods'
-                      ref={(input) => this.input = input}
-                    />
-                    <button
-                      className='icon-btn'
-                      onClick={this.searchFood}>
-                        <ArrowRightIcon size={30}/>
-                    </button>
-                  </div>
-                  {food !== null && (
-                    <FoodList
-                      food={food}
-                      onSelect={(recipe) => {
-                        selectRecipe({ recipe, day: this.state.day, meal: this.state.meal })
-                        this.closeFoodModal()
-                      }}
-                    />)}
-                </div>}
+                <h3 className='subheader'>
+                  Find a meal for {capitalize(this.state.day)} {this.state.meal}.
+                </h3>
+                <div className='search'>
+                  <input
+                    className='food-input'
+                    type='text'
+                    placeholder='Search Foods'
+                    ref={(input) => this.input = input}
+                  />
+                  <button
+                    className='icon-btn'
+                    onClick={this.searchFood}>
+                    <ArrowRightIcon size={30}/>
+                  </button>
+                </div>
+                {food !== null && (
+                  <FoodList
+                    food={food}
+                    onSelect={(recipe) => {
+                      selectRecipe({ recipe, day: this.state.day, meal: this.state.meal })
+                      this.closeFoodModal()
+                    }}
+                  />)}
+              </div>}
           </div>
         </Modal>
 
+        <Modal
+          className='modal'
+          overlayClassName='overlay'
+          isOpen={ingredientsModalOpen}
+          onRequestClose={this.closeIngredientsModal}
+          contentLabel='Modal'
+        >
+          {ingredientsModalOpen && <ShoppingList list={this.generateShoppingList()}/>}
+        </Modal>
 
       </div>
 
