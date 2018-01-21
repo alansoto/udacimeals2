@@ -14,7 +14,8 @@ class App extends Component {
     foodModalOpen:false,
     meal:null,
     day:null,
-    food: null
+    food: null,
+    loadingFood:false
   }
   openFoodModal = ({ meal, day }) => {
     this.setState(() => ({
@@ -55,7 +56,7 @@ doThing = () => {
 }
 
  render() {
-   const { foodModalOpen, loading, food } = this.state;
+   const { foodModalOpen, loadingFood, food } = this.state;
    const {calendar,remove, selectRecipe} = this.props;
    const mealOrder = ['breakfast','lunch','dinner'];
 
@@ -86,7 +87,7 @@ doThing = () => {
                         <img src={meals[meal].image} alt={meals[meal].label}/>
                         <button onClick={() => remove({meal, day})}>Clear</button>
                       </div>
-                    : <button onClick = { () => this.openFoodModal({meal, day})} className='icon-btn'>
+                      : <button onClick = { () => this.openFoodModal({meal, day})} className='icon-btn'>
                         <CalendarIcon size={30}/>
                       </button>}
                   </li>
